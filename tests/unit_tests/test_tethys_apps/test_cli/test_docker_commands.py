@@ -223,7 +223,7 @@ class TestDockerCommands(unittest.TestCase):
         mock_dc.containers.return_value = [{'Names': ['/tethys_postgis'], 'Image': '/tethys_postgis'},
                                            {'Names': ['/tethys_geoserver'], 'Image': '/tethys_geoserver'}]
         all_container_input = ('postgis', 'geoserver', 'wps')
-        ret = cli_docker_commands.get_containers_to_create(mock_dc, all_container_input)
+        ret = cli_docker_commands.get_containers_to_create(all_container_input)
 
         self.assertEquals(1, len(ret))
         self.assertEquals('tethys_wps', ret[0])
@@ -287,7 +287,7 @@ class TestDockerCommands(unittest.TestCase):
         mock_create.return_value = [{'Names': ['/tethys_postgis'], 'Image': '/tethys_postgis'},
                                     {'Names': ['/tethys_geoserver'], 'Image': '/tethys_geoserver'},
                                     {'Names': ['/tethys_wps'], 'Image': '/tethys_wps'}]
-        cli_docker_commands.remove_docker_containers(mock_dc)
+        cli_docker_commands.docker_remove()
 
         po_call_args = mock_pretty_output().__enter__().write.call_args_list
         self.assertEqual(3, len(po_call_args))
@@ -779,7 +779,7 @@ class TestDockerCommands(unittest.TestCase):
                                     'passsuper',  # tethys_super password redo
                                     'passsuper'  # tethys_super password redo matching
                                     ]
-        cli_docker_commands.install_docker_containers(mock_dc, force=False, defaults=False)
+        cli_docker_commands.install_docker_containers(force=False, defaults=False)
 
         po_call_args = mock_pretty_output().__enter__().write.call_args_list
         self.assertEqual(6, len(po_call_args))
@@ -801,7 +801,7 @@ class TestDockerCommands(unittest.TestCase):
                                     '',  # tethys_db_manager password
                                     '',  # tethys_super password
                                     ]
-        cli_docker_commands.install_docker_containers(mock_dc, force=False, defaults=False)
+        cli_docker_commands.install_docker_containers(force=False, defaults=False)
 
         po_call_args = mock_pretty_output().__enter__().write.call_args_list
         self.assertEqual(3, len(po_call_args))
@@ -829,7 +829,7 @@ class TestDockerCommands(unittest.TestCase):
                                   '/tmp'  # Specify location to bind data directory
                                   ]
 
-        cli_docker_commands.install_docker_containers(mock_dc, force=False, defaults=False)
+        cli_docker_commands.install_docker_containers(force=False, defaults=False)
 
         po_call_args = mock_pretty_output().__enter__().write.call_args_list
         self.assertEqual(4, len(po_call_args))
@@ -860,7 +860,7 @@ class TestDockerCommands(unittest.TestCase):
                                   'n',  # Bind the GeoServer data directory to the host?
                                   ]
 
-        cli_docker_commands.install_docker_containers(mock_dc, force=False, defaults=False)
+        cli_docker_commands.install_docker_containers(force=False, defaults=False)
 
         po_call_args = mock_pretty_output().__enter__().write.call_args_list
         self.assertEqual(4, len(po_call_args))
@@ -878,7 +878,7 @@ class TestDockerCommands(unittest.TestCase):
                                                           mock_create_host_config, mock_pretty_output):
         mock_containers_to_create.return_value = ['tethys_geoserver']
 
-        cli_docker_commands.install_docker_containers(mock_dc, force=False, defaults=True)
+        cli_docker_commands.install_docker_containers(force=False, defaults=True)
 
         po_call_args = mock_pretty_output().__enter__().write.call_args_list
         self.assertEqual(2, len(po_call_args))
@@ -896,7 +896,7 @@ class TestDockerCommands(unittest.TestCase):
         mock_containers_to_create.return_value = ['tethys_geoserver']
         mock_image.return_value = ''
 
-        cli_docker_commands.install_docker_containers(mock_dc, force=False, defaults=True)
+        cli_docker_commands.install_docker_containers(force=False, defaults=True)
 
         po_call_args = mock_pretty_output().__enter__().write.call_args_list
         self.assertEqual(2, len(po_call_args))
@@ -928,7 +928,7 @@ class TestDockerCommands(unittest.TestCase):
                                     'wps',  # Admin Password redo
                                     'wps']  # Admin Password match
 
-        cli_docker_commands.install_docker_containers(mock_dc, force=False, defaults=False)
+        cli_docker_commands.install_docker_containers(force=False, defaults=False)
 
         po_call_args = mock_pretty_output().__enter__().write.call_args_list
         self.assertEqual(4, len(po_call_args))
@@ -973,7 +973,7 @@ class TestDockerCommands(unittest.TestCase):
                                   'fooadmin']  # Admin username
         mock_getpass.side_effect = ['']  # Admin Password
 
-        cli_docker_commands.install_docker_containers(mock_dc, force=False, defaults=False)
+        cli_docker_commands.install_docker_containers(force=False, defaults=False)
 
         po_call_args = mock_pretty_output().__enter__().write.call_args_list
         self.assertEqual(3, len(po_call_args))
@@ -1004,7 +1004,7 @@ class TestDockerCommands(unittest.TestCase):
                                                              mock_getpass, mock_pretty_output):
         mock_containers_to_create.return_value = ['tethys_wps']
 
-        cli_docker_commands.install_docker_containers(mock_dc, force=False, defaults=True)
+        cli_docker_commands.install_docker_containers(force=False, defaults=True)
 
         po_call_args = mock_pretty_output().__enter__().write.call_args_list
         self.assertEqual(2, len(po_call_args))
@@ -1037,7 +1037,7 @@ class TestDockerCommands(unittest.TestCase):
                                       {'Names': ['/tethys_wps'], 'Image': '/tethys_wps'}]
         mock_dc_status.return_value = {'tethys_postgis': True, 'tethys_geoserver': True, 'tethys_wps': True}
 
-        cli_docker_commands.start_docker_containers(mock_dc)
+        cli_docker_commands.docker_start()
 
         po_call_args = mock_pretty_output().__enter__().write.call_args_list
         self.assertEqual(3, len(po_call_args))
@@ -1055,7 +1055,7 @@ class TestDockerCommands(unittest.TestCase):
         mock_dc_image.return_value = {'tethys_geoserver': 'cluster'}
         mock_dc_status.return_value = {'tethys_postgis': False, 'tethys_geoserver': False, 'tethys_wps': False}
 
-        cli_docker_commands.start_docker_containers(mock_dc)
+        cli_docker_commands.docker_start()
 
         po_call_args = mock_pretty_output().__enter__().write.call_args_list
         self.assertEqual(3, len(po_call_args))
@@ -1081,7 +1081,7 @@ class TestDockerCommands(unittest.TestCase):
         mock_dc_image.return_value = {'tethys_geoserver': 'foo'}
         mock_dc_status.return_value = {'tethys_postgis': False, 'tethys_geoserver': False, 'tethys_wps': False}
 
-        cli_docker_commands.start_docker_containers(mock_dc)
+        cli_docker_commands.docker_start()
 
         po_call_args = mock_pretty_output().__enter__().write.call_args_list
         self.assertEqual(3, len(po_call_args))
@@ -1103,7 +1103,7 @@ class TestDockerCommands(unittest.TestCase):
         mock_dc_image.return_value = {'tethys_geoserver': 'foo'}
         mock_dc_status.return_value = {}
 
-        cli_docker_commands.start_docker_containers(mock_dc)
+        cli_docker_commands.docker_start()
 
         po_call_args = mock_pretty_output().__enter__().write.call_args_list
         self.assertEqual(3, len(po_call_args))
@@ -1124,7 +1124,7 @@ class TestDockerCommands(unittest.TestCase):
         mock_dc_status.return_value = {'tethys_postgis': False, 'tethys_geoserver': False, 'tethys_wps': False}
         mock_dc.start.side_effect = Exception
 
-        self.assertRaises(Exception, cli_docker_commands.start_docker_containers, mock_dc,
+        self.assertRaises(Exception, cli_docker_commands.docker_start, mock_dc,
                           containers=['postgis'])
 
         po_call_args = mock_pretty_output().__enter__().write.call_args_list
@@ -1144,7 +1144,7 @@ class TestDockerCommands(unittest.TestCase):
         mock_dc_status.return_value = {'tethys_postgis': False, 'tethys_geoserver': False, 'tethys_wps': False}
         mock_dc.start.side_effect = Exception
 
-        self.assertRaises(Exception, cli_docker_commands.start_docker_containers, mock_dc,
+        self.assertRaises(Exception, cli_docker_commands.docker_start, mock_dc,
                           containers=['geoserver'])
 
         po_call_args = mock_pretty_output().__enter__().write.call_args_list
@@ -1163,7 +1163,7 @@ class TestDockerCommands(unittest.TestCase):
         mock_dc_status.return_value = {'tethys_postgis': False, 'tethys_geoserver': False, 'tethys_wps': False}
         mock_dc.start.side_effect = Exception
 
-        self.assertRaises(Exception, cli_docker_commands.start_docker_containers, mock_dc, containers=['wps'])
+        self.assertRaises(Exception, cli_docker_commands.docker_start, mock_dc, containers=['wps'])
 
         po_call_args = mock_pretty_output().__enter__().write.call_args_list
         self.assertEqual(1, len(po_call_args))
@@ -1178,7 +1178,7 @@ class TestDockerCommands(unittest.TestCase):
         mock_docker_client = mock.MagicMock()
         mock_dc_status.return_value = {'tethys_postgis': False, 'tethys_geoserver': False, 'tethys_wps': False}
 
-        cli_docker_commands.stop_docker_containers(mock_docker_client)
+        cli_docker_commands.docker_stop()
 
         po_call_args = mock_pretty_output().__enter__().write.call_args_list
         self.assertEqual(3, len(po_call_args))
@@ -1193,7 +1193,7 @@ class TestDockerCommands(unittest.TestCase):
         mock_docker_client.stop.return_value = True
         mock_dc_status.return_value = {'tethys_postgis': True, 'tethys_geoserver': True, 'tethys_wps': True}
 
-        cli_docker_commands.stop_docker_containers(mock_docker_client)
+        cli_docker_commands.docker_stop()
 
         mock_docker_client.stop.assert_any_call(container='tethys_postgis')
         mock_docker_client.stop.assert_any_call(container='tethys_geoserver')
@@ -1211,7 +1211,7 @@ class TestDockerCommands(unittest.TestCase):
         mock_docker_client.stop.side_effect = KeyError
         mock_dc_status.return_value = {'tethys_postgis': True, 'tethys_geoserver': True, 'tethys_wps': True}
 
-        cli_docker_commands.stop_docker_containers(mock_docker_client)
+        cli_docker_commands.docker_stop()
 
         mock_docker_client.stop.assert_any_call(container='tethys_postgis')
         mock_docker_client.stop.assert_any_call(container='tethys_geoserver')
