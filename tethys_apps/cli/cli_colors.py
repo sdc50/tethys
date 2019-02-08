@@ -41,14 +41,14 @@ REVERSE = '\033[7m'
 CONCEALED = '\033[7m'
 
 # Foreground colors
-FG_BLACK = '\033[30m'
+FG_BLACK = '\033[30m'  # FG_WHITE
 FG_RED = '\033[31m'
 FG_GREEN = '\033[32m'
 FG_YELLOW = '\033[33m'
 FG_BLUE = '\033[34m'
-FG_MAGENTA = '\033[35m'
+FG_MAGENTA = '\033[35m'  # FG_PURPLE
 FG_CYAN = '\033[36m'
-FG_WHITE = '\033[37m'
+FG_WHITE = '\033[37m'  # FG_GRAY
 
 # Background colors
 BG_BLACK = '\033[40m'
@@ -69,9 +69,9 @@ TC_ENDC = '\033[0m'
 
 
 class pretty_output:
-    '''
+    """
     Context manager for pretty terminal prints
-    '''
+    """
 
     def __init__(self, *attr):
         self.attributes = attr
@@ -85,3 +85,23 @@ class pretty_output:
     def write(self, msg):
         style = ''.join(self.attributes)
         print('{}{}{}'.format(style, msg.replace(END, ALL_OFF + style), ALL_OFF))
+
+
+def write_pretty_output(msg, color=FG_BLACK, attributes=None):
+    """Utility function to write output with the `pretty_output` context manager
+
+    Args:
+        msg(str, required):
+            output to write
+        color(constant, optional, default=FG_WHITE):
+            constant representing color of the text
+        attributes(list, optional, default=None):
+            list of constants applying style attributes to `msg`
+
+    Note:
+        If a foreground color is specified in attributes it will override the `color` argument.
+    """
+    attributes = attributes or list()
+    attributes.insert(0, color)
+    with pretty_output(*attributes) as p:
+        p.write(msg)

@@ -20,14 +20,14 @@ import getpass
 import docker
 from docker.types import Mount
 from docker.errors import NotFound as DockerNotFound
-from tethys_apps.cli.cli_colors import pretty_output, FG_WHITE
+from tethys_apps.cli.cli_colors import write_pretty_output
 
 
 __all__ = ['docker_init', 'docker_start',
            'docker_stop', 'docker_status',
            'docker_update', 'docker_remove',
            'docker_ip', 'docker_restart',
-           'POSTGIS_INPUT', 'GEOSERVER_INPUT', 'N52WPS_INPUT']
+           'docker_container_inputs']
 
 OSX = 1
 WINDOWS = 2
@@ -42,19 +42,29 @@ class ContainerMetadata(ABC):
     host_port = None
     container_port = None
     endpoint = None
-    default_docker_host = '127.0.0.1'
+    default_host = '127.0.0.1'
 
-    docker_client = docker.from_env()
+    _docker_client = docker.from_env()
     all_containers = None
 
     def __init__(self, docker_client=None):
         self._docker_client = docker_client
         self._container = None
 
-    @classmethod
-    def refresh_docker_client(cls):
-        cls.docker_client = cls.get_docker_client()
-        return cls.docker_client
+    @staticmethod
+    def get_docker_client():
+        """
+        Configure DockerClient
+        """
+        docker_client = docker.from_env()
+
+        return docker_client
+
+    @property
+    def docker_client(self):
+        if self._docker_client is None:
+            self._docker_client = self.get_docker_client()
+        return self._docker_client
 
     @classmethod
     def get_containers(cls, containers=None, installed=None):
@@ -97,25 +107,17 @@ class ContainerMetadata(ABC):
 
         return msg.format(
             name=self.display_name,
-            host=self.default_docker_host,
+            host=self.default_host,
             port=self.host_port,
             endpoint=self.endpoint
         )
 
-    @abstractmethod
     @property
+    @abstractmethod
     def endpoint(self):
         pass
 
-    @staticmethod
-    def get_docker_client():
-        """
-        Configure DockerClient
-        """
-        docker_client = docker.from_env()
-
-        return docker_client
-
+    @abstractmethod
     def get_container_options(self, defaults):
         pass
 
@@ -144,7 +146,7 @@ class ContainerMetadata(ABC):
     def start(self):
         msg = 'Starting {} container...'
         write_pretty_output(msg.format(self.display_name))
-        msg = ''
+        msg = None
         try:
             self.container.start()
         except Exception as e:
@@ -157,9 +159,9 @@ class ContainerMetadata(ABC):
         msg = 'Stopping {} container...'
         if not silent:
             write_pretty_output(msg.format(self.display_name))
-        msg = ''
         try:
             self.container.stop()
+            msg = None
         except Exception as e:
             msg = 'There was an error while attempting to stop container {}: {}'.format(
                 self.display_name, str(e)
@@ -183,7 +185,7 @@ class PostGisContainerMetadata(ContainerMetadata):
     @property
     def endpoint(self):
         return 'postgresql://<username>:<password>@{host}:{port}/<database>'.format(
-            host=self.default_docker_host,
+            host=self.default_host,
             port=self.host_port
         )
 
@@ -274,7 +276,7 @@ class GeoServerContainerMetadata(ContainerMetadata):
     @property
     def endpoint(self):
         return 'http://{host}:{port}/geoserver/rest'.format(
-            host=self.default_docker_host,
+            host=self.default_host,
             port=self.host_port
         )
 
@@ -303,7 +305,7 @@ class GeoServerContainerMetadata(ContainerMetadata):
 
             return msg.format(
                 name=self.display_name,
-                host=self.default_docker_host,
+                host=self.default_host,
                 port=self.host_port,
                 node_ports=', '.join([str(i) for i in self.node_ports]),
                 endpoint=self.endpoint
@@ -431,7 +433,7 @@ class N52WpsContainerMetadata(ContainerMetadata):
     @property
     def endpoint(self):
         return 'http://{host}:{port}/wps/WebProcessingService'.format(
-            host=self.default_docker_host,
+            host=self.default_host,
             port=self.host_port
         )
 
@@ -541,9 +543,7 @@ class N52WpsContainerMetadata(ContainerMetadata):
         return options
 
 
-POSTGIS_INPUT = PostGisContainerMetadata.input
-GEOSERVER_INPUT = GeoServerContainerMetadata.input
-N52WPS_INPUT = N52WpsContainerMetadata.input
+docker_container_inputs = [c.input for c in ContainerMetadata.get_containers()]
 
 
 def get_docker_container_statuses(containers=None):
@@ -617,7 +617,7 @@ def docker_init(containers=None, defaults=False, force=False):
     install_docker_containers(containers_to_install, defaults=defaults)
 
 
-def docker_start(containers):
+def docker_start(containers=None):
     """
     Start the docker containers
     """
@@ -627,13 +627,14 @@ def docker_start(containers):
         already_running = status
 
         if already_running is None:
-            msg = '{} container not installed...'
+            msg = '{} container not installed.'
         elif already_running:
-            msg = '{} container already running...'
+            msg = '{} container already running.'
         else:
             msg = container_metadata.start()
 
-        write_pretty_output(msg.format(container_metadata.display_name))
+        if msg is not None:
+            write_pretty_output(msg.format(container_metadata.display_name))
 
 
 def docker_stop(containers=None):
@@ -644,14 +645,15 @@ def docker_stop(containers=None):
 
     for container_metadata, status in container_statuses.items():
         already_stopped = not status
-        if already_stopped is None:
-            msg = '{} container not installed...'
+        if status is None:
+            msg = '{} container not installed.'
         elif already_stopped:
-            msg = '{} container already stopped...'
+            msg = '{} container already stopped.'
         else:
             msg = container_metadata.stop()
 
-        write_pretty_output(msg.format(container_metadata.display_name))
+        if msg is not None:
+            write_pretty_output(msg.format(container_metadata.display_name))
 
 
 def docker_restart(containers=None):
@@ -843,8 +845,7 @@ def validate_directory_cli_input(value, default=None):
             try:
                 os.makedirs(value)
             except OSError as e:
-                with pretty_output(FG_WHITE) as p:
-                    p.write('{0}: {1}'.format(repr(e), value))
+                write_pretty_output('{0}: {1}'.format(repr(e), value))
                 prompt = 'Please provide a valid directory'
                 prompt = add_default_to_prompt(prompt, default)
                 prompt = close_prompt(prompt)
@@ -959,8 +960,3 @@ def log_pull_stream(stream):
             curses.endwin()
 
         write_pretty_output('\n'.join(messages_to_print))
-
-
-def write_pretty_output(msg, color=FG_WHITE):
-    with pretty_output(color) as p:
-        p.write(msg)

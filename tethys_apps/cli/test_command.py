@@ -1,11 +1,15 @@
 import os
 import webbrowser
+from subprocess import call
 
 from tethys_apps.cli.manage_commands import get_manage_path, run_process
 from tethys_apps.utilities import get_tethys_src_dir
 
 
 TETHYS_SRC_DIRECTORY = get_tethys_src_dir()
+
+TEST_APP_SRC_DIR = os.path.join(TETHYS_SRC_DIRECTORY, 'tests', 'apps', 'tethysapp-test_app')
+TEST_EXT_SRC_DIR = os.path.join(TETHYS_SRC_DIRECTORY, 'tests', 'extensions', 'tethysext-test_extension')
 
 
 def test_command(args):
@@ -46,7 +50,22 @@ def test_command(args):
     elif args.gui:
         primary_process.append(os.path.join(tests_path, 'gui_tests'))
 
+    # install_test_app_process = ['python', 'setup.py', 'develop']
+    # status = call(install_test_app_process, cwd=TEST_APP_SRC_DIR)
+    # if status != 0:
+    #     exit(status)
+    #
+    # install_test_ext_process = ['python', 'setup.py', 'develop']
+    # status = call(install_test_ext_process, cwd=TEST_EXT_SRC_DIR)
+    # if status != 0:
+    #     exit(status)
+
     test_status = run_process(primary_process)
+
+    # uninstall_test_app_process = ['tethys', 'uninstall', 'test_app']
+    # call(uninstall_test_app_process)
+    # install_test_ext_process = ['tethys', 'uninstall', 'test_extension', '-e']
+    # call(install_test_ext_process)
 
     if args.coverage:
         if args.file and (app_package_tag in args.file or extension_package_tag in args.file):
