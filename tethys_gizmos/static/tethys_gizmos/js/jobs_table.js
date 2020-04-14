@@ -206,13 +206,14 @@ function update_row(table_elem){
     var run = $(table).data('run');
     var delete_btn = $(table).data('delete');
     var results_url = $(table).data('results-url');
+    var monitor_url = $(table).data('monitor-url');
     var refresh_interval = $(table).data('refresh-interval');
     var job_id = $(table_elem).data('job-id');
     var update_url = '/developer/gizmos/ajax/' + job_id + '/update-row';
     $.ajax({
         method: 'POST',
         url: update_url,
-        data: {column_fields: column_fields, status_actions: status_actions, run: run, delete: delete_btn, results_url: results_url}
+        data: {column_fields: column_fields, status_actions: status_actions, run: run, delete: delete_btn, monitor_url: monitor_url, results_url: results_url}
     }).done(function(json){
         if(json.success){
             var current_status = $('#jobs-table-status-'+job_id).children('div').attr('title') || 'None'

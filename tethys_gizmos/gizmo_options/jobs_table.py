@@ -22,9 +22,10 @@ class JobsTable(TethysGizmoOptions):
     Attributes:
         jobs(tuple or list, required): A list/tuple of TethysJob objects.
         column_fields(tuple or list, required): A tuple or list of strings that represent TethysJob object attributes to show in the columns.
-        status_actions(bool): Add a column to the table to show dynamically updating status, and action buttons. If this is false then the values for run_btn, delete_btn, and results_url will be ignored. Default is True.
+        status_actions(bool): Add a column to the table to show dynamically updating status, and action buttons. If this is false then the values for run_btn, delete_btn, monitor_url, and results_url will be ignored. Default is True.
         run_btn(bool): Add a button to run the job when job status is "Pending". Default is True.
         delete_btn(bool): Add a button to delete jobs. Default is True.
+        monitor_url(str):  A string representing the namespaced path to a controller to that displays monitoring information about a running job (e.g. app_name:monitoring_controller)
         results_url(str): A string representing the namespaced path to a controller to that displays job results (e.g. app_name:results_controller)
         hover(bool): Illuminate rows on hover (does not work on striped tables)
         striped(bool): Stripe rows
@@ -65,8 +66,8 @@ class JobsTable(TethysGizmoOptions):
     """  # noqa: E501
     gizmo_name = "jobs_table"
 
-    def __init__(self, jobs, column_fields, status_actions=True, run_btn=True, delete_btn=True, results_url='',
-                 hover=False, striped=False, bordered=False, condensed=False, attributes={}, classes='',
+    def __init__(self, jobs, column_fields, status_actions=True, run_btn=True, delete_btn=True, monitor_url='',
+                 results_url='', hover=False, striped=False, bordered=False, condensed=False, attributes={}, classes='',
                  refresh_interval=5000, delay_loading_status=True, show_detailed_status=False):
         """
         Constructor
@@ -83,6 +84,7 @@ class JobsTable(TethysGizmoOptions):
         self.status_actions = status_actions
         self.run = run_btn
         self.delete = delete_btn
+        self.monitor_url = monitor_url
         self.results_url = results_url
         self.hover = hover
         self.striped = striped
@@ -113,7 +115,10 @@ class JobsTable(TethysGizmoOptions):
 
         first_job = jobs[0]
         for field in column_fields:
-            column_name = field.title().replace('_', ' ')
+            if isinstance(field, tuple):
+                column_name, field = field
+            else:
+                column_name = field.title().replace('_', ' ')
             try:
                 getattr(first_job, field)  # verify that the field name is a valid attribute on the job
                 self.column_names.append(column_name)
@@ -156,6 +161,9 @@ class JobsTable(TethysGizmoOptions):
                 # if not run_time_str or (run_time.days == 0 and total_seconds < 2):
                 #     run_time_str = '%.2f sec' % (total_seconds + float(run_time.microseconds)/1000000,)
                 value = str(value).split('.')[0]
+            if attribute.startswith('extended_properties'):
+                extended_properties = job.extended_properties
+                value = extended_properties.get('monitor_url', '')
             row_values.append(value)
 
         return row_values

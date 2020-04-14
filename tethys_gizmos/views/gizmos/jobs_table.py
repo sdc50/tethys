@@ -24,6 +24,7 @@ def execute(request, job_id):
 def delete(request, job_id):
     try:
         job = TethysJob.objects.get_subclass(id=job_id)
+        job.clean_on_delete = True
         job.delete()
         success = True
         message = ''
