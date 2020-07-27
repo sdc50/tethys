@@ -8,30 +8,28 @@
 
 <div id="jobs-table-messages"></div>
 <table class="table{% if bordered %} table-bordered{% endif %}{% if hover %} table-hover{% endif %}{% if striped %} table-striped{% endif %}{% if condensed %} table-condensed{% endif %}{% if classes %} {{ classes }}{% endif %}"
-        {% if attributes %}
-            {% for key, value in attributes.items %}
-                {{ key }}="{{ value }}"
-            {% endfor %}
-        {% endif %}
-       data-column-fields="{{ column_fields }}" data-status-actions="{{ status_actions }}" data-run="{{ run }}" data-delete="{{ delete }}" data-monitor-url="{{ monitor_url }}" data-results-url="{{ results_url }}" data-refresh-interval="{{ refresh_interval }}"  data-resubmit="{{ show_resubmit_btn }}" data-show-log="{{ show_log_btn }}">
+       style="margin-bottom: 200px;"
+       {% if attributes %}
+           {% for key, value in attributes.items %}
+               {{ key }}="{{ value }}"
+           {% endfor %}
+       {% endif %}
+       data-column-fields="{{ column_fields }}"
+       data-show-status="{{ show_status }}"
+       data-show-actions="{{ show_actions }}"
+       data-monitor-url="{{ monitor_url }}"
+       data-results-url="{{ results_url }}"
+       data-refresh-interval="{{ refresh_interval }}"
+       data-actions="{{ actions|jsonify }}">
   <tr>
     {% for column_name in column_names %}
       <th>{{ column_name }}</th>
     {% endfor %}
-    {% if status_actions %}
-      {% if show_resubmit_btn %}
-        {% if show_log_btn %}
-          <th class="status-col{% if delete %} span-four" colspan="4"{% else %} span-three" colspan="3"{% endif %}>Status</th>
-        {% else %}
-          <th class="status-col{% if delete %} span-three" colspan="3"{% else %}  span-two"{% endif %}>Status</th>
-        {% endif %}
-      {% else %}
-        {% if show_log_btn %}
-          <th class="status-col{% if delete %} span-three" colspan="3"{% else %} span-two" colspan="2"{% endif %}>Status</th>
-        {% else %}
-          <th class="status-col{% if delete %} span-two" colspan="2"{% else %}"{% endif %}>Status</th>
-        {% endif %}
-      {% endif %}
+    {% if show_status %}
+      <th class="status-col">Status</th>
+    {% endif %}
+    {% if show_actions %}
+      <th>Actions</th>
     {% endif %}
   </tr>
 
@@ -58,6 +56,7 @@
   {% endfor %}
 </table>
 
+{# Logs Modal #}
 <div id="modal-dialog-jobs-table-show-log" title="Logs" class="modal" role="dialog">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
@@ -73,6 +72,25 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-success" id="tethys_log_refresh_job_id" value="">Refresh</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Confirmation Modal #}
+<div id="modal-dialog-jobs-table-confirm" title="Confirm" class="modal" role="dialog">
+  <div class="modal-dialog modal-sm" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ModalJobConfirmTitle">Confirm Action</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" id="modal-dialog-jobs-table-confirm-body"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" id="tethys_jobs-table-confirm" value="">Confirm</button>
         <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
       </div>
     </div>

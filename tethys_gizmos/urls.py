@@ -23,7 +23,6 @@ ajax_urls = [
     url(r'^(?P<job_id>[\d.@+-]+)/update-workflow-nodes-row', jobs_table_views.update_workflow_nodes_row,
         name='update_workflow_nodes_row'),
     url(r'^(?P<job_id>[\d.@+-]+)/(?P<type>[\w-]+)/insert-bokeh-row', jobs_table_views.bokeh_row, name='bokeh_row'),
-    url(r'^(?P<job_id>[\d.@+-]+)/update-status', jobs_table_views.update_status, name='update_job_status'),
 ]
 
 urlpatterns = [

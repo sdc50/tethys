@@ -143,10 +143,9 @@ function load_log_content(job_id) {
         }).done(function(json){
             if(json.success){
                 var contents = json.data;
-                var nav_header = generate_nav_header(contents);
-                $('#modal-dialog-jobs-table-log-nav').html(nav_header);
-                var nav_contents = generate_nav_content(contents);
-                $('#modal-dialog-jobs-table-log-content').html(nav_contents);
+                var log_html = generate_log_html(contents);
+                $('#modal-dialog-jobs-table-log-nav').html(log_html.nav_header_html);
+                $('#modal-dialog-jobs-table-log-content').html(log_html.nav_content_html);
                 $('.tethys_job_log_content').hide();
                 // Show the first log
                 var first_content_id = get_first_id_from_content(contents);
@@ -176,43 +175,31 @@ function get_first_id_from_content(contents) {
     return first_id
 }
 
-function generate_nav_header(contents) {
-    var nav_header_html = "";
-    nav_header_html += "<nav class='navbar navbar-default' style='border:0'><div class='container-fluid'><ul class='nav navbar-nav'>";
-    $.each( contents, function(key, value) {
+function generate_log_html(contents){
+  var nav_header_html = "";
+  var nav_content_html = "";
+
+  nav_header_html += "<nav class='navbar navbar-default' style='border:0'><div class='container-fluid'><ul class='nav navbar-nav'>";
+  $.each( contents, function(key, value) {
+        key = key.replace('.', '_');
         // Create a nav if content is string
         if (typeof(value) == "string" || value == null ) {
             nav_header_html += "<li><a href='#' onclick=display_log_content('logfrom_" + key + "')>" + key + "</a></li>";
+            nav_content_html += "<div class='tethys_job_log_content' id='logfrom_" + key + "'>" + value + "</div>";
         }
         else {
             nav_header_html += "<li class='dropdown'><a href='#' class='dropdown-toggle' data-toggle='dropdown' role='button' aria-haspopup='true' aria-expanded='false'>" + key + "<span class='caret'></span></a><ul class='dropdown-menu'>";
             $.each( value, function(key2, value2) {
                 nav_header_html += "<li><a href='#' onclick=display_log_content('logfrom_" + key + "_" + key2 + "')>" + key2 + "</a></li>";
-            });
-            nav_header_html += "</ul></li>";
-        }
-    })
-    nav_header_html +="</ul></div></nav>";
-    return nav_header_html;
-}
-
-function generate_nav_content(contents) {
-    var nav_content_html = "";
-    $.each( contents, function(key, value) {
-        // Create a nav if content is string
-        if (typeof(value) == "string") {
-            nav_content_html += "<div class='tethys_job_log_content' id='logfrom_" + key + "'>" + value + "</div>";
-        }
-        else {
-            $.each( value, function(key2, value2) {
                 nav_content_html += "<div class='tethys_job_log_content' id='logfrom_" + key + "_" + key2 +"'>" + value2 + "</div>";
             });
+            nav_header_html += "</ul></li>";
             nav_content_html += "</ul></li>";
         }
     })
-    return nav_content_html;
+    nav_header_html +="</ul></div></nav>";
+    return {'nav_header_html': nav_header_html, 'nav_content_html': nav_content_html};
 }
-
 
 function display_log_content(log_content_id) {
     // Hide all the class first
@@ -315,7 +302,9 @@ function render_workflow_nodes_graph(dag, target_selector) {
 
 function update_row(table_elem){
     var table = $(table_elem).closest('table');
-    var status_actions = $(table).data('status-actions');
+    var show_status = $(table).data('show-status');
+    var show_actions = $(table).data('show-actions');
+    var actions = $(table).data('actions');
     var column_fields = $(table).data('column-fields');
     var run = $(table).data('run');
     var delete_btn = $(table).data('delete');
@@ -326,10 +315,11 @@ function update_row(table_elem){
     var refresh_interval = $(table).data('refresh-interval');
     var job_id = $(table_elem).data('job-id');
     var update_url = '/developer/gizmos/ajax/' + job_id + '/update-row';
+
     $.ajax({
         method: 'POST',
         url: update_url,
-        data: {column_fields: column_fields, status_actions: status_actions, run: run, delete: delete_btn, monitor_url: monitor_url, show_resubmit_btn: resubmit_btn, show_log_btn: show_log_btn, results_url: results_url}
+        data: {column_fields: column_fields, show_status: show_status, show_actions: show_actions, run: run, delete: delete_btn, monitor_url: monitor_url, show_resubmit_btn: resubmit_btn, show_log_btn: show_log_btn, results_url: results_url, actions: actions}
     }).done(function(json){
         if(json.success){
             var current_status = $('#jobs-table-status-'+job_id).children('div').attr('title') || 'None'
@@ -352,6 +342,7 @@ function update_row(table_elem){
                 });
                 status = json.status;
             }
+            console.log(status);
             if(status == 'Running' || status == 'Submitted' || status == 'Various') {
                 active_counter++;
                 setTimeout(function(){
@@ -372,34 +363,6 @@ function update_row(table_elem){
             $(table_elem).find('.btn-job-show-log').each(function(){
                 bind_show_log_button(this);
             });
-        }
-    });
-}
-
-
-function update_status(table_elem){
-    var table = $(table_elem).closest('table');
-    var status_actions = $(table).data('status-actions');
-    var run = $(table).data('run');
-    var delete_btn = $(table).data('delete');
-    var resubmit_btn = $(table).data('resubmit');
-    var results_url = $(table).data('results-url');
-    var refresh_interval = $(table).data('refresh-interval');
-    var job_id = $(table_elem).data('job-id');
-    var update_url = '/developer/gizmos/ajax/' + job_id + '/update-status';
-    $.ajax({
-        method: 'POST',
-        url: update_url,
-        data: {status_actions: status_actions, run: run, delete: delete_btn, show_resubmit_btn: resubmit_btn, results_url: results_url}
-    }).done(function(json){
-        if(json.success){
-            $(table_elem).html(json.html);
-            status = json.status;
-            if(status == 'Running' || status == 'Submitted' || status == 'Various'){
-                setTimeout(function(){
-                    update_status(table_elem);
-                }, refresh_interval);
-            }
         }
     });
 }
@@ -517,9 +480,10 @@ $('.workflow-nodes-row').each(function(){
 
 // Assign job_id to load button
 $(document).on('click', '.btn-job-show-log', function () {
+    $('#modal-dialog-jobs-table-log-nav').html("");
     $('#modal-dialog-jobs-table-log-content').html("<p>Loading logs...</p>");
     var refresh_job_id = $(this).data('job-id');
-    $("#tethys_log_refresh_job_id").val(refresh_job_it);
+    $("#tethys_log_refresh_job_id").val(refresh_job_id);
 })
 
 // Reload log content
@@ -530,7 +494,7 @@ $(document).on('click', '#tethys_log_refresh_job_id', function () {
     $('#modal-dialog-jobs-table-log-content').html("<p>Refreshing...</p>")
 
     // Load new content
-    load_log_content(refresh_job_it);
+    load_log_content(refresh_job_id);
 })
 
 

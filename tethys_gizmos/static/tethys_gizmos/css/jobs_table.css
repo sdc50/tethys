@@ -190,3 +190,41 @@ p.loading-error {
       transform: rotate(360deg);
     }
   }
+
+/* Status indicator */
+.status-indicator{
+    border-radius: 50%;
+    height: 10px;
+    width: 10px;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.status-Pending{
+  border: 1px solid black;
+}
+
+.status-Submitted{
+  background: #f0ad4e;
+}
+
+.status-Running{
+  background: #5bc1df;
+}
+
+.status-Complete{
+  background: #5cb85b;
+}
+
+.status-Error{
+  background: #d9524f;
+}
+
+.status-Aborted{
+  background: black;
+}
+
+.status-Various-Complete{
+  background: #5cb85b;
+  border: 2px solid #d9524f;
+}

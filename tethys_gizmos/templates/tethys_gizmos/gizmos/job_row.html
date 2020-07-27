@@ -1,35 +1,51 @@
 {% load static tethys_gizmos %}
 
-{% for column_value in row %}
+{% for column_value in row.columns %}
   {% with col_idx=forloop.counter0 %}
     <td id="{{ column_fields|return_item:col_idx }}-{{ job_id }}">{{ column_value }}</td>
   {% endwith %}
 {% endfor %}
-{% if status_actions %}
+{% if show_status %}
   <td id="jobs-table-status-{{ job.id }}" class="job-status status-col" data-job-id="{{ job_id }}">
-    {% if delay_loading_status %}
-    <div class="progress" style="margin-bottom: 0;">
-      <div class="progress-bar progress-bar-info progress-bar-striped active" role="progressbar" title="Updating" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%; background-color: #555555;">
-        <span class="sr-only">100% Updating</span>
-      </div>
-    </div>
-    {% else %}
-      {% include "tethys_gizmos/gizmos/job_status.html" %}
-    {% endif %}
+    {% include "tethys_gizmos/gizmos/job_status.html" %}
   </td>
-  {% if delete %}
-    <td>
-      <a class='btn btn-danger btn-xs btn-job-delete' href="javascript:void(0)" data-job-id="{{ job_id }}" >Delete</a>
-    </td>
-  {% endif %}
-  {% if show_resubmit_btn %}
-    <td>
-      <a class='btn btn-warning btn-xs btn-job-resubmit' href="javascript:void(0)" data-job-id="{{ job_id }}" >Resubmit</a>
-    </td>
-  {% endif %}
-  {% if show_log_btn %}
-    <td>
-      <a class='btn btn-info btn-xs btn-job-show-log' href="javascript:void(0)" data-job-id="{{ job_id }}" data-toggle="modal" data-target="#modal-dialog-jobs-table-show-log">Logs</a>
-    </td>
-  {% endif %}
 {% endif %}
+{% if show_actions %}
+  <td>
+    <div class="btn-group">
+      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Actions <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu">
+        {% if actions.run %}
+          <li class="{% if not row.actions.run %}disabled{% endif %}"><a class='dropdown-item btn-job-run' href="javascript:void(0)" data-job-id="{{ job_id }}" >Run</a></li>
+        {% endif %}
+        {% if actions.resubmit %}
+          <li class="{% if not row.actions.resubmit %}disabled{% endif %}"><a class='dropdown-item btn-job-resubmit' href="javascript:void(0)" data-job-id="{{ job_id }}" >Resubmit</a></li>
+        {% endif %}
+        {% if actions.logs or actions.monitor or actions.results %}
+          <li role="separator" class="divider"></li>
+        {% endif %}
+        {% if actions.logs %}
+          <li class="{% if not row.actions.logs %}disabled{% endif %}"><a class="dropdown-item {% if row.actions.logs %}btn-job-show-log" href="javascript:void(0)" data-job-id="{{ job_id }}" data-toggle="modal" data-target="#modal-dialog-jobs-table-show-log"{% else %}" href="#"{% endif %}>View Logs</a></li>
+        {% endif %}
+        {% if actions.monitor %}
+          <li class="{% if not row.actions.monitor %}disabled{% endif %}"><a class='dropdown-item' href="{% if row.actions.monitor %}{% url monitor_url job_id=job.id %}{% else %}#{% endif %}">Monitor Job</a></li>
+        {% endif %}
+        {% if actions.results %}
+          <li class="{% if not row.actions.results %}disabled{% endif %}"><a class='dropdown-item' href="{% if row.actions.results %}{% url results_url job_id=job.id %}{% else %}#{% endif %}">View Results</a></li>
+        {% endif %}
+        {% if actions.delete or actions.terminate %}
+          <li role="separator" class="divider"></li>
+        {% endif %}
+        {% if actions.terminate %}
+          <li class="{% if not row.actions.terminate %}disabled{% endif %}"><a class='dropdown-item btn-job-delete' href="javascript:void(0)" data-job-id="{{ job_id }}" >Terminate</a>
+        {% endif %}
+        {% if actions.delete %}
+          <li class="{% if not row.actions.delete %}disabled{% endif %}"><a class='dropdown-item btn-job-delete' href="javascript:void(0)" data-job-id="{{ job_id }}" >Delete</a>
+        {% endif %}
+      </ul>
+    </div>
+  </td>
+{% endif %}
+
