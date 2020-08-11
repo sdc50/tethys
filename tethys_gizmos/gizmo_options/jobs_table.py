@@ -78,7 +78,7 @@ class JobsTable(TethysGizmoOptions):
     def __init__(self, jobs, column_fields, show_status=True, show_actions=True, run_btn=None, delete_btn=None,
                  monitor_url='', results_url='', hover=False, striped=False, bordered=False, condensed=False,
                  attributes=None, classes='', refresh_interval=5000, delay_loading_status=True,
-                 show_detailed_status=False, actions=None):
+                 show_detailed_status=False, actions=None, enable_data_table=True, data_table_options=None):
         """
         Constructor
         """
@@ -105,6 +105,8 @@ class JobsTable(TethysGizmoOptions):
         self.refresh_interval = refresh_interval
         self.delay_loading_status = delay_loading_status
         self.show_detailed_status = show_detailed_status
+        self.enable_data_table = enable_data_table
+        self.data_table_options = data_table_options or {'ordering': True, 'searching': False, 'paging': False}
 
         actions = actions or ['run', 'resubmit', 'terminate', 'delete']
         if monitor_url:
@@ -174,7 +176,7 @@ class JobsTable(TethysGizmoOptions):
                 log.warning('Column %s was not added because the %s has no attribute %s.',
                             column_name, str(first_job), field)
 
-        for job in jobs:
+        for job in sorted(jobs):
             row_values = self.get_row(job, self.column_fields)
             self.rows.append(row_values)
 
@@ -203,31 +205,34 @@ class JobsTable(TethysGizmoOptions):
             row_values.append(value)
 
             job_status = job.status
-            job_actions = {}
-            job_actions['run'] = job_status == 'Pending'
-            job_actions['resubmit'] = job_status in TethysJob.TERMINAL_STATUSES
-            job_actions['monitor'] = job_status in TethysJob.RUNNING_STATUSES
-            job_actions['results'] = job_status in TethysJob.TERMINAL_STATUSES
-            job_actions['logs'] = job_status not in TethysJob.PRE_RUNNING_STATUSES
-            job_actions['terminate'] = job_status in TethysJob.ACTIVE_STATUSES
-            job_actions['delete'] = job_status not in TethysJob.ACTIVE_STATUSES
+            job_actions = dict(
+                run=job_status == 'Pending',
+                resubmit=job_status in TethysJob.TERMINAL_STATUSES,
+                monitor=job_status in TethysJob.RUNNING_STATUSES,
+                results=job_status in TethysJob.TERMINAL_STATUSES,
+                logs=job_status not in TethysJob.PRE_RUNNING_STATUSES,
+                terminate=job_status in TethysJob.ACTIVE_STATUSES,
+                delete=job_status not in TethysJob.ACTIVE_STATUSES,
+            )
 
         return JobsTableRow(row_values, actions=job_actions)
 
     @staticmethod
     def get_gizmo_css():
         return (
+            'https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css',
             'tethys_gizmos/css/jobs_table.css',
         )
 
     @staticmethod
     def get_vendor_js():
         return (
+            'https://cdn.datatables.net/1.10.21/js/jquery.dataTables.js',
             'https://cdnjs.cloudflare.com/ajax/libs/d3/4.12.2/d3.min.js',
             'tethys_gizmos/vendor/lodash/lodash.min.js',
             'tethys_gizmos/vendor/graphlib/dist/graphlib.core.min.js',
             'tethys_gizmos/vendor/dagre/dist/dagre.core.min.js',
-            'tethys_gizmos/vendor/dagre-d3/dist/dagre-d3.core.min.js'
+            'tethys_gizmos/vendor/dagre-d3/dist/dagre-d3.core.min.js',
         )
 
     @staticmethod
@@ -235,4 +240,6 @@ class JobsTable(TethysGizmoOptions):
         """
         JavaScript specific to gizmo to be placed in the {% block scripts %} block
         """
-        return ('tethys_gizmos/js/jobs_table.js',)
+        return (
+            'tethys_gizmos/js/jobs_table.js',
+        )
