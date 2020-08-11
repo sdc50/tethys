@@ -67,6 +67,9 @@ class TethysJob(models.Model):
     _process_results_function = models.CharField(max_length=1024, blank=True, null=True)
     _status = models.CharField(max_length=3, choices=STATUSES, default=STATUSES[0][0])
 
+    def __lt__(self, other):
+        return self.id < other.id
+
     @property
     def type(self):
         """

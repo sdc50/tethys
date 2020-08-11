@@ -1,3 +1,15 @@
+.jobs-table, .dataTables_wrapper{
+    margin-bottom: 250px;
+}
+
+.jobs-table th{
+    white-space: nowrap;
+}
+
+.jobs-table td{
+    text-align: center;
+}
+
 /* Workflow Nodes Row Styles */
 .workflow-nodes-graph {
     overflow: hidden;
@@ -162,7 +174,8 @@ p.loading-error {
   }
   #jobs_table_overlay{
     position: fixed;
-    top: 100;
+    top: 0;
+    left: 0;
     z-index: 100;
     width: 100%;
     height:100%;

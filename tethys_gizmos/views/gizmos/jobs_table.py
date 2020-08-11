@@ -22,6 +22,19 @@ def execute(request, job_id):
     return JsonResponse({'success': success, 'message': message})
 
 
+def terminate(request, job_id):
+    try:
+        job = TethysJob.objects.get_subclass(id=job_id)
+        job.stop()
+        success = True
+        message = ''
+    except Exception as e:
+        success = True
+        message = str(e)
+        log.error('The following error occurred when terminating job %s: %s', job_id, message)
+    return JsonResponse({'success': success, 'message': message})
+
+
 def delete(request, job_id):
     try:
         job = TethysJob.objects.get_subclass(id=job_id)
@@ -57,8 +70,16 @@ def show_log(request, job_id):
         # Get the Job logs.
         data = job.get_logs()
 
+        def replace_new_lines(d):
+            for k, v in d.items():
+                if isinstance(v, str):
+                    d[k] = v.replace('\n', '<br/>')
+                elif isinstance(v, dict):
+                    replace_new_lines(v)
+
+        replace_new_lines(data)
+
         success = True
-        message = ''
 
         return JsonResponse({'success': success, 'data': data})
     except Exception as e:
@@ -130,7 +151,7 @@ def update_row(request, job_id):
                                 {
                                     'job_id': job_id,
                                     'error_msg': user_friendly_error,
-                                    'num_cols': len(filters) - 1 if filters else 1
+                                    'num_cols': len(filters) if filters else 1
                                 })
 
     return JsonResponse({'success': success, 'status': status, 'html': html})
