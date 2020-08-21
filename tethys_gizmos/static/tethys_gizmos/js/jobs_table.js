@@ -481,14 +481,16 @@ function init_data_table(){
     $('.jobs-table').each(function(){
         $table = $(this);
         var enable_data_table = $table.data('enable-data-table');
-        var options = $table.data('data-table-options');
-        options.columnDefs = options.columnDefs || [];
-        options.columnDefs.push({
-          targets: 'no-sort',
-          orderable: false,
-        });
+        if(enable_data_table){
+            var options = $table.data('data-table-options');
+            options.columnDefs = options.columnDefs || [];
+            options.columnDefs.push({
+              targets: 'no-sort',
+              orderable: false,
+            });
 
-        if(enable_data_table){$table.DataTable(options);}
+            $table.DataTable(options);
+        }
     });
 }
 
