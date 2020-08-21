@@ -78,7 +78,7 @@ class JobsTable(TethysGizmoOptions):
     def __init__(self, jobs, column_fields, show_status=True, show_actions=True, run_btn=None, delete_btn=None,
                  monitor_url='', results_url='', hover=False, striped=False, bordered=False, condensed=False,
                  attributes=None, classes='', refresh_interval=5000, delay_loading_status=True,
-                 show_detailed_status=False, actions=None, enable_data_table=True, data_table_options=None):
+                 show_detailed_status=False, actions=None, enable_data_table=False, data_table_options=None):
         """
         Constructor
         """
@@ -108,7 +108,7 @@ class JobsTable(TethysGizmoOptions):
         self.enable_data_table = enable_data_table
         self.data_table_options = data_table_options or {'ordering': True, 'searching': False, 'paging': False}
 
-        actions = actions or ['run', 'resubmit', 'terminate', 'delete']
+        actions = actions or ['run', 'resubmit', 'logs', 'terminate', 'delete']
         if monitor_url:
             actions.append('monitor')
         if results_url:

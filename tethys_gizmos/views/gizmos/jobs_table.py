@@ -100,7 +100,7 @@ def update_row(request, job_id):
         keys = [k.split('[') for k in data.keys() if '[' in k]
         for name, key in keys:
             data.setdefault(name, {})
-            data[name][key.strip(']')] = data.pop(f'{name}[{key}')
+            data[name][key.strip(']')] = _parse_value(data.pop(f'{name}[{key}'))
 
         filter_string = data.pop('column_fields')
         filters = [f.strip('\'\" ') for f in filter_string.strip('[]').split(',')]
@@ -269,9 +269,9 @@ def bokeh_row(request, job_id, type='individual-graph'):
 
 
 def _parse_value(val):
-    if val == 'True':
+    if val in ('True', 'true'):
         return True
-    elif val == 'False':
+    elif val in ('False', 'false'):
         return False
     else:
         return val

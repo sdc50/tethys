@@ -58,8 +58,10 @@
         {% if actions.resubmit %}
           <li class="{% if not row.actions.resubmit %}disabled{% endif %}"><a class='dropdown-item btn-job-resubmit' href="javascript:void(0)" data-job-id="{{ job_id }}" >Resubmit</a></li>
         {% endif %}
+        {% if actions.run or actions.resubmit %}
         {% if actions.logs or actions.monitor or actions.results %}
           <li role="separator" class="divider"></li>
+        {% endif %}
         {% endif %}
         {% if actions.logs %}
           <li class="{% if not row.actions.logs %}disabled{% endif %}"><a class="dropdown-item {% if row.actions.logs %}btn-job-show-log" href="javascript:void(0)" data-job-id="{{ job_id }}" data-toggle="modal" data-target="#modal-dialog-jobs-table-show-log"{% else %}" href="#"{% endif %}>View Logs</a></li>
