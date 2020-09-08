@@ -90,7 +90,7 @@
     {% endcomment %}
 
     {% block styles %}
-      <link rel="stylesheet" href="//stackpath.bootstrapcdn.com/bootstrap/{{ tethys.bootstrap.version }}/css/bootstrap.min.css" integrity="{{ tethys.bootstrap.css_integrity }}" crossorigin="anonymous">
+      <link href="{% static 'bootstrap/dist/css/bootstrap.min.css' %}" rel="stylesheet">
       <link href="{% static 'tethys_portal/vendor/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet" />
       <link href="{% static 'tethys_portal/vendor/bootstrap-social/bootstrap-social.css' %}" rel="stylesheet" />
       <link href="{% static 'tethys_portal/css/tethys_main.css' %}"  rel="stylesheet" />
@@ -98,8 +98,8 @@
     {% endblock %}
 
     {% block global_scripts %}
-      <script src="//code.jquery.com/jquery-{{ tethys.jquery.version }}.min.js" integrity="{{ tethys.jquery.integrity }}" crossorigin="anonymous"></script>
-      <script src="//stackpath.bootstrapcdn.com/bootstrap/{{ tethys.bootstrap.version }}/js/bootstrap.min.js" integrity="{{ tethys.bootstrap.js_integrity }}" crossorigin="anonymous"></script>
+      <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+      <script src="{% static 'bootstrap/dist/js/bootstrap.min.js' %}"></script>
     {% endblock %}
 
     {% block session_timeout_modal %}

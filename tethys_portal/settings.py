@@ -31,7 +31,7 @@ from django.contrib.messages import constants as message_constants
 from tethys_apps.utilities import get_tethys_home_dir
 from tethys_cli.gen_commands import generate_secret_key
 
-from bokeh.settings import settings as bokeh_settings
+from bokeh.settings import bokehjsdir, settings as bokeh_settings
 
 log = logging.getLogger(__name__)
 this_module = sys.modules[__name__]
@@ -49,7 +49,7 @@ except FileNotFoundError:
 except Exception:
     log.exception('There was an error while attempting to read the settings from the portal_config.yml file.')
 
-bokeh_settings.resources = portal_config_settings.pop('BOKEH_RESOURCES', 'cdn')
+bokeh_settings.resources = portal_config_settings.pop('BOKEH_RESOURCES', 'server')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
@@ -267,7 +267,7 @@ TEMPLATES = [
 
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
+STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'), os.path.join(BASE_DIR, '../node_modules'), bokehjsdir())
 
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
