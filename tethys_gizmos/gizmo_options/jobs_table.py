@@ -220,15 +220,13 @@ class JobsTable(TethysGizmoOptions):
     @staticmethod
     def get_gizmo_css():
         return (
-            'https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css',
             'tethys_gizmos/css/jobs_table.css',
         )
 
     @staticmethod
     def get_vendor_js():
         return (
-            'https://cdn.datatables.net/1.10.21/js/jquery.dataTables.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/d3/4.12.2/d3.min.js',
+            'd3/build/d3.min.js',
             'tethys_gizmos/vendor/lodash/lodash.min.js',
             'tethys_gizmos/vendor/graphlib/dist/graphlib.core.min.js',
             'tethys_gizmos/vendor/dagre/dist/dagre.core.min.js',

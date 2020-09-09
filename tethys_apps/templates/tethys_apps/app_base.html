@@ -90,7 +90,7 @@
     {% endcomment %}
 
     {% block styles %}
-      <link rel="stylesheet" href="//stackpath.bootstrapcdn.com/bootstrap/{{ tethys.bootstrap.version }}/css/bootstrap.min.css" integrity="{{ tethys.bootstrap.css_integrity }}" crossorigin="anonymous">
+      <link href="{% static 'bootstrap/dist/css/bootstrap.min.css' %}" rel="stylesheet">
       {% block app_base_styles %}
         <link href="{% static 'tethys_apps/css/app_base.min.css' %}" rel="stylesheet" />
       {% endblock %}
@@ -101,8 +101,8 @@
     {% endblock %}
 
     {% block global_scripts %}
-      <script src="//code.jquery.com/jquery-{{ tethys.jquery.version }}.min.js" integrity="{{ tethys.jquery.integrity }}" crossorigin="anonymous"></script>
-      <script src="//stackpath.bootstrapcdn.com/bootstrap/{{ tethys.bootstrap.version }}/js/bootstrap.min.js" integrity="{{ tethys.bootstrap.js_integrity }}" crossorigin="anonymous"></script>
+      <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+      <script src="{% static 'bootstrap/dist/js/bootstrap.min.js' %}"></script>
       {% gizmo_dependencies global_js %}
     {% endblock %}
 
